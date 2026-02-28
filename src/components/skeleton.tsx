@@ -1,12 +1,14 @@
 import { Colors } from "@/constants/colors";
-import { useEffect, useRef } from "react";
-import {
-  Animated,
-  StyleSheet,
-  View,
-  type StyleProp,
-  type ViewStyle,
-} from "react-native";
+import { useEffect } from "react";
+import { StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withSequence,
+  withTiming,
+  Easing,
+} from "react-native-reanimated";
 
 /** A single pulsing placeholder block. */
 export function Skeleton({
@@ -20,26 +22,21 @@ export function Skeleton({
   borderRadius?: number;
   style?: StyleProp<ViewStyle>;
 }) {
-  const opacity = useRef(new Animated.Value(0.3)).current;
+  const opacity = useSharedValue(0.3);
 
   useEffect(() => {
-    const animation = Animated.loop(
-      Animated.sequence([
-        Animated.timing(opacity, {
-          toValue: 1,
-          duration: 800,
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacity, {
-          toValue: 0.3,
-          duration: 800,
-          useNativeDriver: true,
-        }),
-      ]),
+    opacity.value = withRepeat(
+      withSequence(
+        withTiming(1, { duration: 800, easing: Easing.inOut(Easing.ease) }),
+        withTiming(0.3, { duration: 800, easing: Easing.inOut(Easing.ease) }),
+      ),
+      -1, // infinite
     );
-    animation.start();
-    return () => animation.stop();
   }, [opacity]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+  }));
 
   return (
     <Animated.View
@@ -49,8 +46,8 @@ export function Skeleton({
           height,
           borderRadius,
           backgroundColor: Colors.border,
-          opacity,
         },
+        animatedStyle,
         style,
       ]}
     />
