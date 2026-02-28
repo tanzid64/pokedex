@@ -1,12 +1,15 @@
 import { Colors } from "@/constants/colors";
 import { StatLabels, TypeColors } from "@/constants/pokemon";
+import { useFavorites } from "@/hooks/use-favorites";
 import { fetchPokemonDetail, getSpriteUrl } from "@/lib/pokeapi";
 import { PokemonDetail } from "@/types/pokemon";
+import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import { useEffect, useLayoutEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -57,6 +60,8 @@ function TypeBadge({ type }: { type: string }) {
 export default function PokemonDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const navigation = useNavigation();
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const numericId = Number(id);
   const [pokemon, setPokemon] = useState<PokemonDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -106,6 +111,18 @@ export default function PokemonDetailsScreen() {
     >
       {/* Hero section */}
       <View style={[styles.heroSection, { backgroundColor: primaryColor }]}>
+        <Pressable
+          style={styles.favoriteButton}
+          onPress={() => toggleFavorite(numericId)}
+        >
+          <Ionicons
+            name={isFavorite(numericId) ? "heart" : "heart-outline"}
+            size={28}
+            color={
+              isFavorite(numericId) ? Colors.primary : "rgba(255,255,255,0.8)"
+            }
+          />
+        </Pressable>
         <Image
           source={{ uri: getSpriteUrl(pokemon.id) }}
           style={styles.heroImage}
@@ -210,6 +227,15 @@ const styles = StyleSheet.create({
     paddingBottom: 60,
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32,
+  },
+  favoriteButton: {
+    position: "absolute",
+    top: 12,
+    right: 16,
+    zIndex: 1,
+    backgroundColor: "rgba(255,255,255,0.25)",
+    borderRadius: 20,
+    padding: 8,
   },
   heroImage: {
     width: 220,

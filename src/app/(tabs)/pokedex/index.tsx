@@ -1,54 +1,51 @@
 import { Colors } from "@/constants/colors";
 import { fetchPokemonList, getIdFromUrl, getSpriteUrl } from "@/lib/pokeapi";
 import { PokemonListItem } from "@/types/pokemon";
+import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
   Pressable,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from "react-native";
 
-const PAGE_SIZE = 20;
+const TOTAL_POKEMON = 150;
 
 export default function PokedexScreen() {
   const router = useRouter();
   const [pokemon, setPokemon] = useState<PokemonListItem[]>([]);
-  const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
+  const [search, setSearch] = useState("");
 
-  const loadPokemon = useCallback(async (currentOffset: number) => {
+  const loadAllPokemon = useCallback(async () => {
     try {
-      const data = await fetchPokemonList(currentOffset, PAGE_SIZE);
-      setPokemon((prev) =>
-        currentOffset === 0 ? data.results : [...prev, ...data.results],
-      );
-      setHasMore(data.next !== null);
+      const data = await fetchPokemonList(0, TOTAL_POKEMON);
+      setPokemon(data.results);
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
-      setLoadingMore(false);
     }
   }, []);
 
   useEffect(() => {
-    loadPokemon(0);
-  }, [loadPokemon]);
+    loadAllPokemon();
+  }, [loadAllPokemon]);
 
-  const loadMore = () => {
-    if (loadingMore || !hasMore) return;
-    setLoadingMore(true);
-    const nextOffset = offset + PAGE_SIZE;
-    setOffset(nextOffset);
-    loadPokemon(nextOffset);
-  };
+  const filtered = useMemo(() => {
+    if (!search.trim()) return pokemon;
+    const query = search.toLowerCase().trim();
+    return pokemon.filter((p) => {
+      const id = String(getIdFromUrl(p.url));
+      return p.name.includes(query) || id.includes(query);
+    });
+  }, [pokemon, search]);
 
   const renderItem = ({ item }: { item: PokemonListItem }) => {
     const id = getIdFromUrl(item.url);
@@ -82,36 +79,100 @@ export default function PokedexScreen() {
   }
 
   return (
-    <FlatList
-      data={pokemon}
-      keyExtractor={(item) => item.name}
-      renderItem={renderItem}
-      contentContainerStyle={styles.list}
-      onEndReached={loadMore}
-      onEndReachedThreshold={0.5}
-      ListFooterComponent={
-        loadingMore ? (
-          <ActivityIndicator
-            size="small"
-            color={Colors.primary}
-            style={{ paddingVertical: 16 }}
-          />
-        ) : null
-      }
-    />
+    <View style={styles.screen}>
+      <View style={styles.searchContainer}>
+        <Ionicons
+          name="search"
+          size={18}
+          color={Colors.textSecondary}
+          style={styles.searchIcon}
+        />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search by name or number..."
+          placeholderTextColor={Colors.textSecondary}
+          value={search}
+          onChangeText={setSearch}
+          autoCorrect={false}
+          autoCapitalize="none"
+        />
+        {search.length > 0 && (
+          <Pressable onPress={() => setSearch("")}>
+            <Ionicons
+              name="close-circle"
+              size={18}
+              color={Colors.textSecondary}
+            />
+          </Pressable>
+        )}
+      </View>
+      <FlatList
+        data={filtered}
+        keyExtractor={(item) => item.name}
+        renderItem={renderItem}
+        contentContainerStyle={styles.list}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Ionicons
+              name="sad-outline"
+              size={48}
+              color={Colors.textSecondary}
+            />
+            <Text style={styles.emptyText}>No Pokémon found</Text>
+          </View>
+        }
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
   centered: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: Colors.background,
   },
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: Colors.card,
+    marginHorizontal: 12,
+    marginTop: 12,
+    marginBottom: 4,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    height: 44,
+    shadowColor: Colors.shadow,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 15,
+    color: Colors.text,
+    paddingVertical: 0,
+  },
   list: {
     padding: 12,
-    backgroundColor: Colors.background,
+  },
+  emptyContainer: {
+    alignItems: "center",
+    paddingTop: 60,
+    gap: 12,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: Colors.textSecondary,
   },
   card: {
     flexDirection: "row",
