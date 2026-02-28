@@ -9,3 +9,31 @@ export interface PokemonListItem {
   name: string;
   url: string;
 }
+
+export interface PokemonDetail {
+  id: number;
+  name: string;
+  height: number; // in decimetres
+  weight: number; // in hectograms
+  types: {
+    slot: number;
+    type: { name: string; url: string };
+  }[];
+  stats: {
+    base_stat: number;
+    effort: number;
+    stat: { name: string; url: string };
+  }[];
+  abilities: {
+    ability: { name: string; url: string };
+    is_hidden: boolean;
+    slot: number;
+  }[];
+  sprites: {
+    other: {
+      "official-artwork": {
+        front_default: string;
+      };
+    };
+  };
+}
