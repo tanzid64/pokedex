@@ -1,3 +1,4 @@
+import { DetailSkeleton } from "@/components/skeleton";
 import { Colors } from "@/constants/colors";
 import { StatLabels, TypeColors } from "@/constants/pokemon";
 import { useFavorites } from "@/hooks/use-favorites";
@@ -7,14 +8,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import { useEffect, useLayoutEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 function capitalize(str: string) {
   return str.charAt(0).toUpperCase() + str.slice(1);
@@ -86,11 +80,7 @@ export default function PokemonDetailsScreen() {
   }, [pokemon, navigation]);
 
   if (loading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color={Colors.primary} />
-      </View>
-    );
+    return <DetailSkeleton />;
   }
 
   if (error || !pokemon) {

@@ -1,3 +1,4 @@
+import { PokedexListSkeleton } from "@/components/skeleton";
 import { Colors } from "@/constants/colors";
 import { useFavorites } from "@/hooks/use-favorites";
 import { fetchPokemonList, getIdFromUrl, getSpriteUrl } from "@/lib/pokeapi";
@@ -7,7 +8,6 @@ import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  ActivityIndicator,
   FlatList,
   Pressable,
   StyleSheet,
@@ -82,11 +82,7 @@ export default function PokedexScreen() {
   };
 
   if (loading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color={Colors.primary} />
-      </View>
-    );
+    return <PokedexListSkeleton />;
   }
 
   return (
