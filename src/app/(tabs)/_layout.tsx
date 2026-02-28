@@ -50,9 +50,10 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="pokedex"
         options={{
           title: "Pokédex",
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="list" size={size} color={color} />
           ),
