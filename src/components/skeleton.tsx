@@ -2,12 +2,12 @@ import { Colors } from "@/constants/colors";
 import { useEffect } from "react";
 import { StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
 import Animated, {
-  useSharedValue,
+  Easing,
   useAnimatedStyle,
+  useSharedValue,
   withRepeat,
   withSequence,
   withTiming,
-  Easing,
 } from "react-native-reanimated";
 
 /** A single pulsing placeholder block. */
