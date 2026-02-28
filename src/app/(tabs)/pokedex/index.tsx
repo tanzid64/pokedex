@@ -1,4 +1,5 @@
 import { Colors } from "@/constants/colors";
+import { useFavorites } from "@/hooks/use-favorites";
 import { fetchPokemonList, getIdFromUrl, getSpriteUrl } from "@/lib/pokeapi";
 import { PokemonListItem } from "@/types/pokemon";
 import { Ionicons } from "@expo/vector-icons";
@@ -19,6 +20,7 @@ const TOTAL_POKEMON = 150;
 
 export default function PokedexScreen() {
   const router = useRouter();
+  const { isFavorite } = useFavorites();
   const [pokemon, setPokemon] = useState<PokemonListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -49,9 +51,10 @@ export default function PokedexScreen() {
 
   const renderItem = ({ item }: { item: PokemonListItem }) => {
     const id = getIdFromUrl(item.url);
+    const fav = isFavorite(id);
     return (
       <Pressable
-        style={styles.card}
+        style={[styles.card, fav && styles.cardFavorite]}
         onPress={() => router.push(`/pokedex/${id}` as any)}
       >
         <Image
@@ -66,6 +69,14 @@ export default function PokedexScreen() {
             {item.name.charAt(0).toUpperCase() + item.name.slice(1)}
           </Text>
         </View>
+        {fav && (
+          <Ionicons
+            name="heart"
+            size={20}
+            color={Colors.primary}
+            style={styles.favIcon}
+          />
+        )}
       </Pressable>
     );
   };
@@ -186,6 +197,20 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 2,
+    borderWidth: 1.5,
+    borderColor: "transparent",
+  },
+  cardFavorite: {
+    borderColor: Colors.primary,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 6,
+    backgroundColor: "#FFF5F5",
+  },
+  favIcon: {
+    marginRight: 4,
   },
   sprite: {
     width: 68,
